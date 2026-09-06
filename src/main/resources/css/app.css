@@ -1,0 +1,10 @@
+.root {
+    -fx-background-color: #1e2126;
+    -fx-font-family: "JetBrains Mono", "Consolas", "Menlo", monospace;
+    -fx-font-size: 45px;
+}
+
+.char-pending   { -fx-fill: #5c6370; }
+.char-correct   { -fx-fill: #d8dee9; }
+.char-incorrect { -fx-fill: #e06c75; }
+.char-cursor    { -fx-underline: true; }
