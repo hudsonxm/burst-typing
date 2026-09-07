@@ -12,6 +12,9 @@
 
 # Package Files #
 *.jar
+# ...except the Gradle wrapper jar: it must stay tracked so ./gradlew
+# works on a fresh clone without Gradle installed.
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
@@ -26,3 +29,6 @@ replay_pid*
 .gradle/
 build/
 .idea/
+
+bin/
+.vscode/

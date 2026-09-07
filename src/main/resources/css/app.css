@@ -8,3 +8,9 @@
 .char-correct   { -fx-fill: #d8dee9; }
 .char-incorrect { -fx-fill: #e06c75; }
 .char-cursor    { -fx-underline: true; }
+
+.stats {
+    -fx-text-fill: #7a8290;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 20px;
+}

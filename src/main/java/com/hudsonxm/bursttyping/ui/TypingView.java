@@ -1,11 +1,17 @@
 package com.hudsonxm.bursttyping.ui;
 
+import java.util.List;
+
+import com.hudsonxm.bursttyping.engine.Keystroke;
 import com.hudsonxm.bursttyping.engine.TypingSession;
+import com.hudsonxm.bursttyping.engine.WpmCalculator;
 
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
@@ -13,13 +19,21 @@ import javafx.scene.text.TextFlow;
 public class TypingView extends StackPane{
 
     private final TextFlow flow = new TextFlow();
+    private final Label stats = new Label();
+    private final VBox column = new VBox(28); // gap between words and stats
+
     private TypingSession session;
     private Text[] charNodes;
 
     public TypingView() {
-        flow.setMaxWidth(Region.USE_PREF_SIZE);
         flow.setTextAlignment(TextAlignment.CENTER);
-        getChildren().add(new Group(flow));
+        stats.getStyleClass().add("stats");
+
+        column.setAlignment(Pos.CENTER);
+        // Group wrapper is a hack to make the TextFlow center its content properly
+        column.getChildren().addAll(new Group(flow), stats);
+
+        getChildren().add(column);
         setAlignment(Pos.CENTER);
     }
 
@@ -27,6 +41,7 @@ public class TypingView extends StackPane{
         this.session = newSession;
         this.charNodes = new Text[newSession.length()];
         flow.getChildren().clear();
+        stats.setText(""); // clear last run's numbers
 
         for (int i = 0; i < newSession.length(); i++) {
             Text charNode = new Text(String.valueOf(newSession.target().charAt(i)));
@@ -43,11 +58,13 @@ public class TypingView extends StackPane{
         if (c < ' ') return;
 
         int before = session.cursor();
-        session.accept(c);
+        session.accept(c, System.nanoTime());
         if (session.cursor() == before) return;
 
         restyle(before);
         moveCursor(before, session.cursor());
+
+        if (session.isComplete()) showResults();
     }
 
     public void handleBackspace() {
@@ -59,6 +76,18 @@ public class TypingView extends StackPane{
 
         restyle(session.cursor());
         moveCursor(before, session.cursor());
+    }
+
+    private void showResults() {
+        List<Keystroke> ks = session.keystrokes();
+        long elapsed = session.elapsedNanos();
+
+        stats.setText(String.format(
+            "%.0f wpm     %.0f raw     %.1f%% acc     %.2fs",
+            WpmCalculator.netWpm(ks, elapsed),
+            WpmCalculator.rawWpm(ks, elapsed),
+            WpmCalculator.accuracy(ks),
+            elapsed / 1_000_000_000.0));
     }
 
     private void restyle(int index) {
