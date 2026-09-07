@@ -1,7 +1,7 @@
 .root {
     -fx-background-color: #1e2126;
     -fx-font-family: "JetBrains Mono", "Consolas", "Menlo", monospace;
-    -fx-font-size: 45px;
+    -fx-font-size: 35px;
 }
 
 .char-pending   { -fx-fill: #5c6370; }
@@ -11,6 +11,12 @@
 
 .stats {
     -fx-text-fill: #7a8290;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 20px;
+}
+
+.history {
+    -fx-text-fill: #4b5263;
     -fx-font-family: "JetBrains Mono", "Consolas", monospace;
     -fx-font-size: 20px;
 }

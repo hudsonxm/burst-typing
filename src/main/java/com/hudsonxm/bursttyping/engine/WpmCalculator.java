@@ -21,14 +21,14 @@ public final class WpmCalculator {
     // Net: only correct keystrokes count. This is "real" WPM.
     public static double netWpm(List<Keystroke> keystrokes, long elapsedNanos) {
         if (elapsedNanos <= 0) return 0;
-        long correct = keystrokes.stream().filter(Keystroke::isCorrect).count();
+        long correct = keystrokes.stream().filter(Keystroke::correct).count();
         double minutes = elapsedNanos / NANOS_PER_MINUTE;
         return (correct / CHARS_PER_WORD) / minutes;
     }
 
     public static double accuracy(List<Keystroke> keystrokes) {
         if (keystrokes.isEmpty()) return 0;
-        long correct = keystrokes.stream().filter(Keystroke::isCorrect).count();
+        long correct = keystrokes.stream().filter(Keystroke::correct).count();
         return (double) correct / keystrokes.size() * 100.0;
     }
 }

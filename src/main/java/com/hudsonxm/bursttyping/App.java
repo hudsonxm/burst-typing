@@ -2,6 +2,8 @@ package com.hudsonxm.bursttyping;
 
 import com.hudsonxm.bursttyping.engine.TypingSession;
 import com.hudsonxm.bursttyping.engine.WordListProvider;
+import com.hudsonxm.bursttyping.persistence.JsonRunStore;
+import com.hudsonxm.bursttyping.persistence.RunStore;
 import com.hudsonxm.bursttyping.ui.TypingView;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -12,13 +14,14 @@ import javafx.stage.Stage;
 public class App extends Application {
 
     private final WordListProvider words = new WordListProvider();
+    private final RunStore store = new JsonRunStore();
 
     @Override
     public void start(Stage stage) {
         Font.loadFont(
             getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"), 30);
 
-        TypingView view = new TypingView();
+        TypingView view = new TypingView(store);
         view.load(new TypingSession(words.nextTest(10)));
 
         Scene scene = new Scene(view, 1400, 700);
