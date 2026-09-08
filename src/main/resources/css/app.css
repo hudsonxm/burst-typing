@@ -1,13 +1,19 @@
 .root {
     -fx-background-color: #1e2126;
     -fx-font-family: "JetBrains Mono", "Consolas", "Menlo", monospace;
-    -fx-font-size: 35px;
+    -fx-font-size: 30px;
 }
 
 .char-pending   { -fx-fill: #5c6370; }
 .char-correct   { -fx-fill: #d8dee9; }
 .char-incorrect { -fx-fill: #e06c75; }
-.char-cursor    { -fx-underline: true; }
+
+/* Blink rate lives in TypingView; JavaFX CSS has no animation support. */
+.caret {
+    -fx-stroke: #d8dee9;
+    -fx-stroke-width: 2;
+    -fx-stroke-line-cap: round;
+}
 
 .stats {
     -fx-text-fill: #7a8290;
@@ -16,6 +22,12 @@
 }
 
 .history {
+    -fx-text-fill: #4b5263;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 20px;
+}
+
+.restart {
     -fx-text-fill: #4b5263;
     -fx-font-family: "JetBrains Mono", "Consolas", monospace;
     -fx-font-size: 20px;
