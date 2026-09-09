@@ -27,7 +27,7 @@ public class TypingSession {
         if (isComplete()) return;
         if (startNanos < 0) startNanos = nanos; // Clock starts on first keystroke, not when the session is created.
 
-        keystrokes.add(new Keystroke(c, target.charAt(cursor), nanos));
+        keystrokes.add(new Keystroke(c, target.charAt(cursor), cursor, nanos));
         typed[cursor] = c;
         cursor++;
 
@@ -36,6 +36,7 @@ public class TypingSession {
 
     public void backspace() {
         if (cursor == 0) return;
+        if (isComplete()) return;
         cursor--;
         typed[cursor] = 0;
     }

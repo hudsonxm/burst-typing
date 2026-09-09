@@ -27,8 +27,14 @@
     -fx-font-size: 20px;
 }
 
-.restart {
+.digraphs {
     -fx-text-fill: #4b5263;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 20px;
+}
+
+.restart {
+    -fx-text-fill: #d8dee9;
     -fx-font-family: "JetBrains Mono", "Consolas", monospace;
     -fx-font-size: 20px;
 }

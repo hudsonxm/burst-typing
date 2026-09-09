@@ -1,9 +1,9 @@
 package com.hudsonxm.bursttyping.ui;
 
-import com.hudsonxm.bursttyping.engine.Keystroke;
+import com.hudsonxm.bursttyping.analytics.DigraphStats;
+import com.hudsonxm.bursttyping.analytics.DigraphStats.DigraphStat;
 import com.hudsonxm.bursttyping.engine.TestRun;
 import com.hudsonxm.bursttyping.engine.TypingSession;
-import com.hudsonxm.bursttyping.engine.WpmCalculator;
 import com.hudsonxm.bursttyping.persistence.RunStore;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
@@ -24,11 +24,16 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TypingView extends StackPane {
 
     // Half the blink cycle: fades out over this long, then back in over it again.
     private static final Duration BLINK = Duration.millis(530);
+
+    private static final int DIGRAPH_MIN_SAMPLES = 5;
+    private static final int DIGRAPHS_SHOWN = 3;
+    private static final int DIGRAPH_WINDOW = 20;
 
     private final TextFlow flow = new TextFlow();
     private final Line caret = new Line();
@@ -36,6 +41,7 @@ public class TypingView extends StackPane {
 
     private final Label stats = new Label();
     private final Label history = new Label();
+    private final Label digraphs = new Label();
     private final Label restart = new Label();
     private final VBox column = new VBox(28);
 
@@ -63,6 +69,7 @@ public class TypingView extends StackPane {
         flow.setTextAlignment(TextAlignment.CENTER);
         stats.getStyleClass().add("stats");
         history.getStyleClass().add("history");
+        digraphs.getStyleClass().add("digraphs");
         restart.getStyleClass().add("restart");
 
         caret.getStyleClass().add("caret");
@@ -71,7 +78,7 @@ public class TypingView extends StackPane {
         blink.setCycleCount(Animation.INDEFINITE);
 
         column.setAlignment(Pos.CENTER);
-        column.getChildren().addAll(flowGroup, stats, history, restart);
+        column.getChildren().addAll(flowGroup, stats, history, digraphs, restart);
 
         VBox.setMargin(restart, new Insets(48, 0, 0, 0));
 
@@ -85,6 +92,7 @@ public class TypingView extends StackPane {
         flow.getChildren().clear();
         stats.setText("");
         history.setText("");
+        digraphs.setText("");
         restart.setText("");
 
         for (int i = 0; i < newSession.length(); i++) {
@@ -131,18 +139,21 @@ public class TypingView extends StackPane {
         // after the test is over, never during typing.
         store.save(run);
 
+        // Read once after the save so the new run is included in the history and digraphs.
+        List<TestRun> all = store.loadAll();
+
         stats.setText(String.format(
             "%.0f wpm    %.0f raw    %.1f%% acc    %.2fs",
             run.netWpm(), run.rawWpm(), run.accuracy(), run.elapsedSeconds()));
 
         restart.setText(String.format("Press TAB to restart"));
 
-        showHistory();
+        showHistory(all);
+        showDigraphs(all);
     }
 
     // Interim: real distribution work moves to analytics/ next.
-    private void showHistory() {
-        List<TestRun> all = store.loadAll();
+    private void showHistory(List<TestRun> all) {
         if (all.size() < 2) return;
 
         double best = all.stream().mapToDouble(TestRun::netWpm).max().orElse(0);
@@ -150,6 +161,22 @@ public class TypingView extends StackPane {
 
         history.setText(String.format(
             "best %.0f    avg %.0f    %d runs", best, mean, all.size()));
+    }
+
+    private void showDigraphs(List<TestRun> all) {
+        // Limit the window to the most recent 20 runs so the digraphs reflect current
+        // typing habits rather than converging to a fixed pattern.
+        List<TestRun> recent = all.size() <= DIGRAPH_WINDOW
+            ? all
+            : all.subList(all.size() - DIGRAPH_WINDOW, all.size());
+
+        List<DigraphStat> slowest = DigraphStats.from(recent, DIGRAPH_MIN_SAMPLES);
+        if (slowest.isEmpty()) return; // nothing has hit the minimum sample threshold yet
+
+        digraphs.setText("slowest:   " + slowest.stream()
+            .limit(DIGRAPHS_SHOWN)
+            .map(d -> String.format("%s %.0fms", d.pair(), d.medianMillis()))
+            .collect(Collectors.joining("   ")));
     }
 
     private void restyle(int index) {

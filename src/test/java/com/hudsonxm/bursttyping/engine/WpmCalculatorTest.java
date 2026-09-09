@@ -8,11 +8,11 @@ class WpmCalculatorTest {
 
     private static final long ONE_MINUTE = 60_000_000_000L;
 
-    // Helper: n keystrokes that all match, timestamps irrelevant here since
-    // elapsed time is passed separately.
+    // Helper: n keystrokes that all match. Index and timestamp are irrelevant
+    // here — elapsed time is passed separately and wpm doesn't look at position.
     private static List<Keystroke> correct(int n) {
         return java.util.stream.IntStream.range(0, n)
-                .mapToObj(i -> new Keystroke('a', 'a', i))
+                .mapToObj(i -> new Keystroke('a', 'a', i, i))
                 .toList();
     }
 
@@ -25,9 +25,9 @@ class WpmCalculatorTest {
     @Test
     void rawCountsIncorrectKeystrokesButNetDoesNot() {
         List<Keystroke> ks = List.of(
-            new Keystroke('t', 't', 0),
-            new Keystroke('x', 'h', 1),   // wrong
-            new Keystroke('e', 'e', 2)
+            new Keystroke('t', 't', 0, 0),
+            new Keystroke('x', 'h', 1, 1),   // wrong
+            new Keystroke('e', 'e', 2, 2)
         );
         // raw: 3 chars, net: 2 chars — over 1 minute, so /5 gives 0.6 and 0.4
         assertEquals(0.6, WpmCalculator.rawWpm(ks, ONE_MINUTE), 0.001);
@@ -37,10 +37,10 @@ class WpmCalculatorTest {
     @Test
     void accuracyIsPercentOfCorrectKeystrokes() {
         List<Keystroke> ks = List.of(
-            new Keystroke('a', 'a', 0),
-            new Keystroke('b', 'b', 1),
-            new Keystroke('x', 'c', 2),
-            new Keystroke('d', 'd', 3)
+            new Keystroke('a', 'a', 0, 0),
+            new Keystroke('b', 'b', 1, 1),
+            new Keystroke('x', 'c', 2, 2),
+            new Keystroke('d', 'd', 3, 3)
         );
         assertEquals(75.0, WpmCalculator.accuracy(ks), 0.001);
     }

@@ -14,8 +14,8 @@ import java.util.stream.IntStream;
 public class WordListProvider {
     
     private static final String RESOURCE = "/words/english-1k.txt";
-    private static final int MIN_WORD_LENGTH = 2;
-    private static final int MAX_WORD_LENGTH = 8;
+    private static final int MIN_WORD_LENGTH = 3;
+    private static final int MAX_WORD_LENGTH = 7;
 
     private final List<String> words;
     private final Random random = new Random();
