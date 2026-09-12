@@ -34,6 +34,7 @@ public class App extends Application {
                 view.load(new TypingSession(words.nextTest(10)));
                 e.consume();
             }
+            if (e.getCode() == KeyCode.F1) view.showLatencies();
         });
 
         stage.setScene(scene);

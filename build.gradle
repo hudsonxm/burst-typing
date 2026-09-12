@@ -16,7 +16,10 @@ javafx {
     modules = ['javafx.controls']
 }
 
-application { mainClass = 'com.hudsonxm.bursttyping.App' }
+application {
+    mainClass = 'com.hudsonxm.bursttyping.App'
+    applicationDefaultJvmArgs = ['-Djavafx.animation.framerate=120']
+}
 
 repositories { mavenCentral() }
 

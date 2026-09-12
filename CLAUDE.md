@@ -51,6 +51,7 @@ src/main/resources/
 └── words/english-1k.txt
 src/test/java/com/hudsonxm/bursttyping/
 ├── analytics/DigraphStatsTest        14 tests
+├── persistence/JsonRunStoreTest      10 tests, @TempDir — never touches ~/.burst-typing
 └── engine/TypingSessionTest          3 tests
     engine/WpmCalculatorTest          6 tests
 ```
@@ -126,7 +127,7 @@ load-bearing — the rule is about `engine/` and `analytics/`.
 
 ```bash
 ./gradlew run     # launch
-./gradlew test    # 23 engine + analytics tests, no window opens
+./gradlew test    # 33 tests across engine, analytics, persistence; no window opens
 ```
 
 Java 21 toolchain, JavaFX 21.0.2 (`javafx.controls` only) via the `org.openjfx.javafxplugin`
@@ -164,9 +165,6 @@ you ever rework the ignore rules, or a fresh clone loses `./gradlew`.
   2–8 character filter in `WordListProvider` (`MIN_WORD_LENGTH`/`MAX_WORD_LENGTH`). Words are
   drawn with replacement, so a word can repeat within one test — deliberate, Monkeytype does
   the same.
-- `persistence/` has no tests. `JsonRunStore` does file I/O, atomic replacement, and JSON
-  round-tripping of the whole model, and none of it is covered — the constructor already
-  takes an injectable `Path` for exactly this purpose.
 - The three digraph constants in `TypingView` interact and aren't independently tunable:
   narrowing `DIGRAPH_WINDOW` shrinks the sample pool, so pairs stop clearing
   `DIGRAPH_MIN_SAMPLES` and the line empties. Past 20 runs the window reaches a steady state

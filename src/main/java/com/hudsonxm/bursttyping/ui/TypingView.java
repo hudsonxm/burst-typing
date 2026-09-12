@@ -2,6 +2,7 @@ package com.hudsonxm.bursttyping.ui;
 
 import com.hudsonxm.bursttyping.analytics.DigraphStats;
 import com.hudsonxm.bursttyping.analytics.DigraphStats.DigraphStat;
+import com.hudsonxm.bursttyping.analytics.LatencySamples;
 import com.hudsonxm.bursttyping.engine.TestRun;
 import com.hudsonxm.bursttyping.engine.TypingSession;
 import com.hudsonxm.bursttyping.persistence.RunStore;
@@ -14,6 +15,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -35,6 +37,10 @@ public class TypingView extends StackPane {
     private static final int DIGRAPHS_SHOWN = 3;
     private static final int DIGRAPH_WINDOW = 20;
 
+    private final LatencySamples pulseLatency = new LatencySamples();
+    private long pendingKeystrokeNanos = -1; // -1 = no keystroke awaiting a pulse
+    private boolean pulseListenerInstalled;
+
     private final TextFlow flow = new TextFlow();
     private final Line caret = new Line();
     private final Group flowGroup = new Group(flow, caret);
@@ -42,6 +48,7 @@ public class TypingView extends StackPane {
     private final Label stats = new Label();
     private final Label history = new Label();
     private final Label digraphs = new Label();
+    private final Label latencies = new Label();
     private final Label restart = new Label();
     private final VBox column = new VBox(28);
 
@@ -70,6 +77,7 @@ public class TypingView extends StackPane {
         stats.getStyleClass().add("stats");
         history.getStyleClass().add("history");
         digraphs.getStyleClass().add("digraphs");
+        latencies.getStyleClass().add("latencies");
         restart.getStyleClass().add("restart");
 
         caret.getStyleClass().add("caret");
@@ -78,7 +86,7 @@ public class TypingView extends StackPane {
         blink.setCycleCount(Animation.INDEFINITE);
 
         column.setAlignment(Pos.CENTER);
-        column.getChildren().addAll(flowGroup, stats, history, digraphs, restart);
+        column.getChildren().addAll(flowGroup, stats, history, digraphs, latencies, restart);
 
         VBox.setMargin(restart, new Insets(48, 0, 0, 0));
 
@@ -93,6 +101,7 @@ public class TypingView extends StackPane {
         stats.setText("");
         history.setText("");
         digraphs.setText("");
+        latencies.setText("");
         restart.setText("");
 
         for (int i = 0; i < newSession.length(); i++) {
@@ -117,6 +126,9 @@ public class TypingView extends StackPane {
 
         restyle(before);
         moveCursor(session.cursor());
+
+        ensurePulseListener();
+        pendingKeystrokeNanos = nanos;
 
         if (session.isComplete()) finishRun();
     }
@@ -179,6 +191,21 @@ public class TypingView extends StackPane {
             .collect(Collectors.joining("   ")));
     }
 
+    public void showLatencies() {
+        if (pulseLatency.count() == 0) {
+            latencies.setText("no keystrokes measured yet");
+            return;
+        }
+
+        latencies.setText(String.format(
+            "keystroke->pulse   p50: %.1fms  p95: %.1fms  p99: %.1fms  max: %.1fms.  n=%d",
+            pulseLatency.percentileMillis(50),
+            pulseLatency.percentileMillis(95),
+            pulseLatency.percentileMillis(99),
+            pulseLatency.percentileMillis(100),
+            pulseLatency.count()));
+    }
+
     private void restyle(int index) {
         Text t = charNodes[index];
         t.getStyleClass().removeAll("char-pending", "char-correct", "char-incorrect");
@@ -224,5 +251,20 @@ public class TypingView extends StackPane {
     protected void layoutChildren() {
         super.layoutChildren();
         placeCaret();
+    }
+
+    private void ensurePulseListener() {
+        if (pulseListenerInstalled) return;
+        Scene scene = getScene();
+        if (scene == null) return; // not yet attached to a scene
+
+        scene.addPostLayoutPulseListener(this::recordPulseLatency);
+        pulseListenerInstalled = true;
+    }
+
+    private void recordPulseLatency() {
+        if (pendingKeystrokeNanos < 0) return;
+        pulseLatency.record(System.nanoTime() - pendingKeystrokeNanos);
+        pendingKeystrokeNanos = -1;
     }
 }
