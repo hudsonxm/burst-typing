@@ -6,7 +6,15 @@
 
 .char-pending   { -fx-fill: #5c6370; }
 .char-correct   { -fx-fill: #d8dee9; }
-.char-incorrect { -fx-fill: #e06c75; }
+.char-incorrect {
+    -fx-underline: true;
+    -fx-fill: #e06c75;
+}
+
+.char-incorrect-space {
+    -fx-underline: true;
+    -fx-fill: #e06c75;
+}
 
 /* Blink rate lives in TypingView; JavaFX CSS has no animation support. */
 .caret {

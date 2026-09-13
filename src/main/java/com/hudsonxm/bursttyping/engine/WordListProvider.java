@@ -13,9 +13,7 @@ import java.util.stream.IntStream;
 
 public class WordListProvider {
     
-    private static final String RESOURCE = "/words/english-1k.txt";
-    private static final int MIN_WORD_LENGTH = 3;
-    private static final int MAX_WORD_LENGTH = 7;
+    private static final String RESOURCE = "/words/burst-common.txt";
 
     private final List<String> words;
     private final Random random = new Random();
@@ -34,12 +32,13 @@ public class WordListProvider {
             if (in == null) {
                 throw new IllegalStateException("Word list not found: " + resourcePath);
             }
+            // No length filtering: the list is curated, so every line is a word we
+            // actually want drawn. A filter here would silently discard edits instead.
             List<String> loaded = new BufferedReader(
                     new InputStreamReader(in, StandardCharsets.UTF_8))
                     .lines()
                     .map(String::trim)
                     .filter(line -> !line.isEmpty())
-                    .filter(line -> line.length() >= MIN_WORD_LENGTH && line.length() <= MAX_WORD_LENGTH)
                     .toList();
 
             if (loaded.isEmpty()) {

@@ -48,7 +48,7 @@ src/main/java/com/hudsonxm/bursttyping/
 src/main/resources/
 ├── css/app.css
 ├── fonts/JetBrainsMono-Regular.ttf  (+ OFL.txt)
-└── words/english-1k.txt
+└── words/burst-common.txt
 src/test/java/com/hudsonxm/bursttyping/
 ├── analytics/DigraphStatsTest        14 tests
 ├── persistence/JsonRunStoreTest      10 tests, @TempDir — never touches ~/.burst-typing
@@ -150,7 +150,9 @@ you ever rework the ignore rules, or a fresh clone loses `./gradlew`.
 - `keystrokes.size()` can exceed `target.length()` after backspace-and-retype. Correct for
   accuracy, and `DigraphStats` handles it, but anything new in `analytics/` must expect it.
 - Single-line layout with no wrap. A draw of unusually long words can overflow the window.
-  `WordListProvider` caps words at 8 characters, which makes this unlikely but not impossible.
+  Nothing enforces a maximum any more — the curated list's longest word is 8 characters, and
+  that's the only thing preventing it. Adding a long word to `burst-common.txt` is enough to
+  break the layout, with no error to say so.
 - `JsonRunStore.save()` rewrites the entire history file on every run, and `TypingView` does
   it on the FX thread. Fine at current sizes — it only happens once a test is over, never
   during typing — but it's O(history) per run and will need revisiting.
@@ -161,10 +163,13 @@ you ever rework the ignore rules, or a fresh clone loses `./gradlew`.
   error, no warning. That history was discarded rather than migrated, so nothing stale remains
   today — but the next field added to `Keystroke` or `TestRun` will fail the same silent way,
   and there's no version field to detect it against.
-- Word list is `words/english-1k.txt`, roughly a thousand lines, of which ~890 survive the
-  2–8 character filter in `WordListProvider` (`MIN_WORD_LENGTH`/`MAX_WORD_LENGTH`). Words are
-  drawn with replacement, so a word can repeat within one test — deliberate, Monkeytype does
-  the same.
+- Word list is `words/burst-common.txt`: 303 hand-picked words, 2–8 characters, average 4.92,
+  so a 10-word test is ~58 keystrokes. Curated for burst typing — common enough to be muscle
+  memory, American spellings, no proper nouns, no awkward same-hand pile-ups. `WordListProvider`
+  applies **no length filter**: every line in the file is drawn, so an edit takes effect rather
+  than being silently discarded. That also means the file is the only thing keeping words short
+  enough for the single-line layout. Words are drawn with replacement, so one can repeat within
+  a test — deliberate, Monkeytype does the same.
 - The three digraph constants in `TypingView` interact and aren't independently tunable:
   narrowing `DIGRAPH_WINDOW` shrinks the sample pool, so pairs stop clearing
   `DIGRAPH_MIN_SAMPLES` and the line empties. Past 20 runs the window reaches a steady state

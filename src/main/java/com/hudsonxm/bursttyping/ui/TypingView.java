@@ -208,11 +208,12 @@ public class TypingView extends StackPane {
 
     private void restyle(int index) {
         Text t = charNodes[index];
-        t.getStyleClass().removeAll("char-pending", "char-correct", "char-incorrect");
+        t.getStyleClass().removeAll("char-pending", "char-correct", "char-incorrect", "char-incorrect-space");
         switch (session.statusAt(index)) {
             case PENDING   -> t.getStyleClass().add("char-pending");
             case CORRECT   -> t.getStyleClass().add("char-correct");
-            case INCORRECT -> t.getStyleClass().add("char-incorrect");
+            case INCORRECT -> t.getStyleClass().add(
+                session.target().charAt(index) == ' ' ? "char-incorrect-space" : "char-incorrect");
         }
     }
 
