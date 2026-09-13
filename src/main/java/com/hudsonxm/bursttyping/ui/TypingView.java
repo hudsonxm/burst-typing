@@ -12,7 +12,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -76,8 +75,8 @@ public class TypingView extends StackPane {
         stats.getStyleClass().add("stats");
         history.getStyleClass().add("history");
         digraphs.getStyleClass().add("digraphs");
-        latencies.getStyleClass().add("latencies");
         restart.getStyleClass().add("restart");
+        latencies.getStyleClass().add("latencies");
 
         caret.getStyleClass().add("caret");
         caret.setManaged(false);
@@ -85,9 +84,7 @@ public class TypingView extends StackPane {
         blink.setCycleCount(Animation.INDEFINITE);
 
         column.setAlignment(Pos.CENTER);
-        column.getChildren().addAll(flowGroup, stats, history, digraphs, latencies, restart);
-
-        VBox.setMargin(restart, new Insets(48, 0, 0, 0));
+        column.getChildren().addAll(flowGroup, stats, history, digraphs, restart, latencies);
 
         getChildren().add(column);
         setAlignment(Pos.CENTER);
@@ -100,8 +97,8 @@ public class TypingView extends StackPane {
         stats.setText("");
         history.setText("");
         digraphs.setText("");
-        latencies.setText("");
         restart.setText("");
+        latencies.setText("");
 
         for (int i = 0; i < newSession.length(); i++) {
             Text t = new Text(String.valueOf(newSession.target().charAt(i)));
