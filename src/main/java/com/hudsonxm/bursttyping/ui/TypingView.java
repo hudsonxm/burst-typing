@@ -2,7 +2,7 @@ package com.hudsonxm.bursttyping.ui;
 
 import com.hudsonxm.bursttyping.analytics.DigraphStats;
 import com.hudsonxm.bursttyping.analytics.DigraphStats.DigraphStat;
-import com.hudsonxm.bursttyping.analytics.LatencySamples;
+import com.hudsonxm.bursttyping.analytics.PulseLatencyTracker;
 import com.hudsonxm.bursttyping.engine.TestRun;
 import com.hudsonxm.bursttyping.engine.TypingSession;
 import com.hudsonxm.bursttyping.persistence.RunStore;
@@ -37,8 +37,7 @@ public class TypingView extends StackPane {
     private static final int DIGRAPHS_SHOWN = 3;
     private static final int DIGRAPH_WINDOW = 20;
 
-    private final LatencySamples pulseLatency = new LatencySamples();
-    private long pendingKeystrokeNanos = -1; // -1 = no keystroke awaiting a pulse
+    private final PulseLatencyTracker pulseLatency = new PulseLatencyTracker();
     private boolean pulseListenerInstalled;
 
     private final TextFlow flow = new TextFlow();
@@ -128,7 +127,7 @@ public class TypingView extends StackPane {
         moveCursor(session.cursor());
 
         ensurePulseListener();
-        pendingKeystrokeNanos = nanos;
+        pulseLatency.onKeystroke(nanos);
 
         if (session.isComplete()) finishRun();
     }
@@ -158,7 +157,7 @@ public class TypingView extends StackPane {
             "%.0f wpm    %.0f raw    %.1f%% acc    %.2fs",
             run.netWpm(), run.rawWpm(), run.accuracy(), run.elapsedSeconds()));
 
-        restart.setText(String.format("Press TAB to restart"));
+        restart.setText("Press TAB to restart");
 
         showHistory(all);
         showDigraphs(all);
@@ -197,13 +196,20 @@ public class TypingView extends StackPane {
             return;
         }
 
+        // Shown only when non-zero, which should be never — but an overflow
+        // means the numbers beside it are missing the fastest keystrokes.
+        String dropped = pulseLatency.dropped() == 0
+            ? ""
+            : String.format("  dropped=%d", pulseLatency.dropped());
+
         latencies.setText(String.format(
-            "keystroke->pulse   p50: %.1fms  p95: %.1fms  p99: %.1fms  max: %.1fms.  n=%d",
+            "keystroke->pulse   p50: %.1fms  p95: %.1fms  p99: %.1fms  max: %.1fms.  n=%d%s",
             pulseLatency.percentileMillis(50),
             pulseLatency.percentileMillis(95),
             pulseLatency.percentileMillis(99),
             pulseLatency.percentileMillis(100),
-            pulseLatency.count()));
+            pulseLatency.count(),
+            dropped));
     }
 
     private void restyle(int index) {
@@ -264,8 +270,7 @@ public class TypingView extends StackPane {
     }
 
     private void recordPulseLatency() {
-        if (pendingKeystrokeNanos < 0) return;
-        pulseLatency.record(System.nanoTime() - pendingKeystrokeNanos);
-        pendingKeystrokeNanos = -1;
+        // No-ops when nothing is pending, which is most pulses.
+        pulseLatency.onPulse(System.nanoTime());
     }
 }
