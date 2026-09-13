@@ -49,7 +49,7 @@ public class TypingSession {
     // Live-updating while running, frozen once endNanos is set.
     public long elapsedNanos() {
         if (startNanos < 0) return 0;
-        return (endNanos < 0 ? System.nanoTime() : endNanos) - startNanos; // TODO
+        return (endNanos < 0 ? System.nanoTime() : endNanos) - startNanos;
     }
 
     public boolean hasStarted() { return startNanos >= 0; }
