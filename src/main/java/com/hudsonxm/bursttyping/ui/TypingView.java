@@ -168,7 +168,7 @@ public class TypingView extends StackPane {
         double mean = all.stream().mapToDouble(TestRun::netWpm).average().orElse(0);
 
         history.setText(String.format(
-            "best %.0f    avg %.0f    %d runs", best, mean, all.size()));
+            "best: %.0fwpm       avg: %.0fwpm       %d runs", best, mean, all.size()));
     }
 
     private void showDigraphs(List<TestRun> all) {
@@ -181,7 +181,7 @@ public class TypingView extends StackPane {
         List<DigraphStat> slowest = DigraphStats.from(recent, DIGRAPH_MIN_SAMPLES);
         if (slowest.isEmpty()) return; // nothing has hit the minimum sample threshold yet
 
-        digraphs.setText("slowest:   " + slowest.stream()
+        digraphs.setText("slowest pairs:  " + slowest.stream()
             .limit(DIGRAPHS_SHOWN)
             .map(d -> String.format("%s %.0fms", d.pair(), d.medianMillis()))
             .collect(Collectors.joining("   ")));
